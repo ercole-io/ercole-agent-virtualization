@@ -1,0 +1,131 @@
+#!/bin/sh
+
+# Copyright (c) 2019 Sorint.lab S.p.A.
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+OPERATING_SYSTEM=$(uname -o)
+#LICENCING_CPU_CORES=$(grep processor /proc/cpuinfo | wc -l)
+HOSTNAME=$(hostname)
+
+if [ "$OPERATING_SYSTEM" = "GNU/Linux" ]; then
+    CPU_MODEL=$(grep "model name" /proc/cpuinfo | sort -u | awk -F ': ' '{print $2}')
+elif [ "$OPERATING_SYSTEM" = "Solaris" ]; then
+    CPU_MODEL=$(kstat cpu_info | grep "brand" | cut -c34- | head -n 1)
+fi
+CPU_THREAD=$(nproc --all)
+if [ "$CPU_THREAD" = '1' ]; then
+  CPU_CORES=1
+else 
+  CPU_CORES=$(($CPU_THREAD / 2))
+fi
+if [ "$VIRTUAL" = 'Y' ]; then
+  SOCKET=1
+else
+  if [ "$OPERATING_SYSTEM" = "GNU/Linux" ]; then
+    SOCKET=$(grep -i "physical id" /proc/cpuinfo |sort -n|uniq|wc -l)
+  elif [ "$OPERATING_SYSTEM" = "Solaris" ]; then
+    SOCKET=$(psrinfo -p)
+  fi
+fi 
+KERNEL=$(uname -r)
+
+if [ "$OPERATING_SYSTEM" = "GNU/Linux" ]; then
+    if [ -f /etc/lsb-release ]; then
+        OS=$(grep DISTRIB_ID /etc/lsb-release | sed -e 's/DISTRIB_ID=\(.*\)/\1/')
+    elif [ -f /etc/redhat-release ]; then
+        OS=$(cat /etc/redhat-release)
+    elif [ -f /etc/SuSE-release ]; then
+        OS=$(head -n 1 /etc/SuSE-release)
+    else
+        OS="GNU/Linux-unknown"
+    fi
+elif [ "$OPERATING_SYSTEM" = "Solaris" ]; then
+    OS="$OPERATING_SYSTEM"
+else
+    OS="Unknown " 
+fi
+
+if [ "$OPERATING_SYSTEM" = "GNU/Linux" ]; then
+    MEM_TOTAL=$(echo "$(($(free -k | grep Mem | awk -F ' ' '{print $2}')/1024/1024))")
+    SWP_TOTAL=$(echo "$(($(free -k | grep Swap | awk -F ' ' '{print $2}')/1024/1024))")
+elif [ "$OPERATING_SYSTEM" = "Solaris" ]; then
+    MEM_TOTAL=$(($(prtconf | grep "Memory" | sed -e 's/Memory size: \(.*\) Megabytes/\1/') / 1024))
+    SWP_TOTAL=$(($(swap -s | sed -e 's/.* used, \(.*\)k available/\1/') / 1024 / 1024))
+fi
+
+
+CHECK_SUN_CLUSTER=$(ps -ef | grep -v grep | grep rpc.pmfd|wc -l)
+if [ $CHECK_SUN_CLUSTER = 1 ]; then
+  SUN_CLUSTER=Y
+else
+  SUN_CLUSTER=N
+fi
+
+CHECK_VERITAS_CLUSTER=$(ps -ef | grep -v grep | grep had|wc -l)
+if [ $CHECK_VERITAS_CLUSTER = 1 ]; then
+  VERITAS_CLUSTER=Y
+else
+  VERITAS_CLUSTER=N
+fi
+
+CHECK_ORACLE_CLUSTER=$(ps -ef | grep -v grep | grep crsd|wc -l)
+if [ $CHECK_ORACLE_CLUSTER -gt 0 ]; then
+  ORACLE_CLUSTER=Y
+else
+  ORACLE_CLUSTER=N
+fi
+
+
+CHECK_TYPE_SERVER_OVM_DMESG=$(dmesg | grep OVM | wc -l)
+CHECK_TYPE_SERVER_OVM_LOG=$(grep -i ovm /var/log/dmesg | wc -l)
+CHECK_TYPE_SERVER_VMWARE=$(dmesg | grep VMware | wc -l)
+# CHECK_TYPE_SERVER_AIX=$(uname -L | awk '{print $1}')
+# TODO: HPUX has a specific server type, see original script
+CHECK_TYPE_SERVER_HPUX=0
+
+if [ "$OPERATING_SYSTEM" = "GNU/Linux" ]; then
+    CHECK_TYPE_SERVER_HYPERVISOR=$(grep ^flags /proc/cpuinfo | grep hypervisor | wc -l)
+else
+    CHECK_TYPE_SERVER_HYPERVISOR=""
+fi
+
+if [ "$CHECK_TYPE_SERVER_OVM_DMESG" -gt 0 ] || [ "$CHECK_TYPE_SERVER_OVM_LOG" -gt 0 ]; then
+  TYPE=OVM
+  VIRTUAL=Y
+elif [ "$CHECK_TYPE_SERVER_VMWARE" -gt 0 ]; then
+  TYPE=VMWARE
+  VIRTUAL=Y
+elif [ "$CHECK_TYPE_SERVER_HYPERVISOR" -gt 0 ]; then
+  TYPE=VMOTHER
+  VIRTUAL=Y
+else
+  TYPE=PH
+  VIRTUAL=N
+fi
+
+echo "hostname: $HOSTNAME
+cpumodel: $CPU_MODEL
+cputhreads: $CPU_THREAD
+cpucores: $CPU_CORES
+socket: $SOCKET
+type: $TYPE
+virtual: $VIRTUAL
+kernel: $KERNEL
+os: $OS
+memorytotal: $MEM_TOTAL
+swaptotal: $SWP_TOTAL
+oraclecluster: $ORACLE_CLUSTER
+veritascluster: $VERITAS_CLUSTER
+suncluster: $SUN_CLUSTER" 
