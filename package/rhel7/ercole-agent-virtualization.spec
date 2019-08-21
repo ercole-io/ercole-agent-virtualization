@@ -4,8 +4,8 @@ Release:        1%{?dist}
 Summary:        Agent Virtualization for ercole
 
 License:        Proprietary
-URL:            https://github.com/amreo/%{name}
-Source0:        https://github.com/amreo/%{name}/archive/%{name}-%{version}.tar.gz
+URL:            https://github.com/ercole-io/%{name}
+Source0:        https://github.com/ercole-io/%{name}/archive/%{name}-%{version}.tar.gz
 
 Group:          Tools
 
