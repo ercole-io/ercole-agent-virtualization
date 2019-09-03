@@ -2,10 +2,18 @@
     "hostname": "default",
     "envtype": "PROD",
     "location": "Germany",
-    "serverurl": "https://127.0.0.1:9090/host/update",
+    "serverurl": "http://127.0.0.1:9090/host/update",
     "serverusr": "user",
     "serverpsw": "password",
     "frequency": 24,
     "hosttype": "virtualization",
-    "EnableServerValidation": false
+    "EnableServerValidation": false,
+    "hypervisors": [
+        { 
+            "type": "vmware", 
+            "endpoint": "10.20.30.40", 
+            "username": "reader@vsphere.local", 
+            "password": "reader"
+        }
+    ]
 }

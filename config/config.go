@@ -34,6 +34,15 @@ type Configuration struct {
 	Frequency              int
 	HostType               string
 	EnableServerValidation bool
+	Hypervisors            []Hypervisor
+}
+
+// Hypervisor holds the parameters used to connect to the hypervisor
+type Hypervisor struct {
+	Type     string
+	Endpoint string
+	Username string
+	Password string
 }
 
 // ReadConfig reads the configuration file from the current dir

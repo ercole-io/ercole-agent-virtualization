@@ -7,10 +7,10 @@
 	Automated VMware cluster and VMs available in a list of provided vCenter servers.
 
 	.EXAMPLE
-	./vmware.ps1 -s vms
+	./vmware.ps1 -s vms endpoint username password
 	
 	.EXAMPLE
-	./vmware.ps1 -s cluster
+	./vmware.ps1 -s cluster endpoint username password
 
 	.NOTES
 	File Name  : cluster.ps1  
@@ -28,42 +28,41 @@
 #>
 
 param (
-	[Parameter(Mandatory=$true)][string]$s
+	[Parameter(Mandatory=$true)][string]$s,
+	[Parameter(Mandatory=$true)][string]$endpoint,
+	[Parameter(Mandatory=$true)][string]$username,
+	[Parameter(Mandatory=$true)][string]$password
 )
+
 #Set-PowerCLIConfiguration -InvalidCertificateAction:Ignore
-if(Test-Path .\creds.csv) {
-    $vcs = Import-CSV .\creds.csv
-    foreach ($vc in $vcs) {
-        Connect-VIServer $vc.server -User $vc.user -Password $vc.pass | Out-Null
-        New-VIProperty -Name NumCPU -ObjectType Cluster -Value {
-                    $TotalPCPU = 0
-                    $Args[0] | Get-VMHost | Foreach {
-                        $TotalPCPU += $_.NumCPU
-                    }
-                    $TotalPCPU
-            } `
-            -Force -WarningAction:SilentlyContinue | Out-Null
-            
-        New-VIProperty -Name NumSockets -ObjectType Cluster -Value {
-                    $TotalPSOCKS = 0
-                    $Args[0] | Get-VMHost | Foreach {
-                        $TotalPSOCKS += $_.ExtensionData.Hardware.CpuInfo.NumCpuPackages
-                    }
-                    $TotalPSOCKS
-            } `
-            -Force -WarningAction:SilentlyContinue | Out-Null
-		switch ($s.ToUpper()) {
-			"VMS" {
-				# OUTPUT FORMAT: cluster name, vm name, guest os hostname
-				Get-VM | Select @{N="Cluster";E={Get-Cluster -VM $_}}, Name, @{N="guestHostname";E={$_.ExtensionData.Guest.HostName}} | ConvertTo-CSV | % { $_ -replace '"', ""}
+Connect-VIServer "$endpoint" -User "$username" -Password "$password" | Out-Null
+New-VIProperty -Name NumCPU -ObjectType Cluster -Value {
+			$TotalPCPU = 0
+			$Args[0] | Get-VMHost | Foreach {
+				$TotalPCPU += $_.NumCPU
 			}
-			"CLUSTER" {
-				# OUTPUT FORMAT: cluster name, core sum, socket sum
-				Get-Cluster | Select Name, NumCPU, NumSockets | ConvertTo-CSV | % { $_ -replace '"', ""}
+			$TotalPCPU
+	} `
+	-Force -WarningAction:SilentlyContinue | Out-Null
+	
+New-VIProperty -Name NumSockets -ObjectType Cluster -Value {
+			$TotalPSOCKS = 0
+			$Args[0] | Get-VMHost | Foreach {
+				$TotalPSOCKS += $_.ExtensionData.Hardware.CpuInfo.NumCpuPackages
 			}
-			Default	{ Write-Host "wrong switch selection" }
-		}
-        Disconnect-VIServer $vc.server -Confirm:$false | Out-Null
-    }
+			$TotalPSOCKS
+	} `
+	-Force -WarningAction:SilentlyContinue | Out-Null
+switch ($s.ToUpper()) {
+	"VMS" {
+		# OUTPUT FORMAT: cluster name, vm name, guest os hostname
+		Get-VM | Select @{N="Cluster";E={Get-Cluster -VM $_}}, Name, @{N="guestHostname";E={$_.ExtensionData.Guest.HostName}} | ConvertTo-CSV | % { $_ -replace '"', ""}
+	}
+	"CLUSTER" {
+		# OUTPUT FORMAT: cluster name, core sum, socket sum
+		Get-Cluster | Select Name, NumCPU, NumSockets | ConvertTo-CSV | % { $_ -replace '"', ""}
+	}
+	Default	{ Write-Host "wrong switch selection" }
 }
-else { Write-Warning "Credentials file not found, please check working dir."}
+Disconnect-VIServer $endpoint -Confirm:$false | Out-Null
+
