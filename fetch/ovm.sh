@@ -4,15 +4,23 @@
 # Prereq   - ovm_vmcontrol installato su ovm manager
 #   	   - Scambio chiavi con utente ovm manager che possa eseguire ovm_vmcontrol
 #   	   - Le vm non devono contenere spazi
+#		   - sshpass installato sul server
 #####################################################################################
 
-OVMPASS="Oracle123"
-OVMHOST=vmmgmt
-OVMUSER=admin
-OVMUSERKEY=root
-SSHOVMCLI="sshpass -p 'Oracle123' ssh admin@vmmgmt -p 10000"
-OVMCONTROL=/tmp/ovm/ovm_util/ovm-utils_2.1
+
+## TYPE - vms|cluster
 TYPE=$1
+## OracleVM Manager hostname
+OVMHOST=$2
+## OracleVM User
+OVMUSER=$3
+## OracleVM Manager Password
+OVMPASS="$4"
+## Host  OracleVM user that key excange 
+OVMUSERKEY=$5
+## Path that contain ovm_vmcontrol
+OVMCONTROL=$6
+SSHOVMCLI="sshpass -p '$OVMPASS' ssh ${OVMUSER}@${OVMHOST} -p 10000"
 CLUSTERCPU=0
 
 function check_connection
@@ -20,6 +28,8 @@ function check_connection
 	ovmcli_access=$($SSHOVMCLI list manager |grep -c Success)
 	if [[ $ovmcli_access != 1 ]]; then
 	  exit 1
+		elif [[ $(ssh ${OVMUSERKEY}@${OVMHOST} "if [ ! -d ${OVMCONTROL} ]; then echo 1; else echo 0; fi") -eq 1 ]]; then
+		exit 2
 	fi
 }
 
@@ -67,19 +77,21 @@ function get_cpu_from_server {
 }
 
 
-if [ $# -ne 1 ]
+if [ $# -ne 6 ]
  then
 	clear
 	echo ""
 	echo "====================================================================================================="
-	echo " You have to specify <vms|cluster>"
+	echo " You have to specify <vms|cluster> <ovmhost> <ovmuser> <ovmpassword> <ovmuserkey> <ovmcontrol> "
 	echo " Example:"
-        echo "           ovm.sh vms"
-        echo "           ovm.sh cluster"
+        echo "           ovm.sh vms srvovmmgr admin Password2 root /tmp/ovm/ovm_util/ovm-utils_2.1"
+        echo "           ovm.sh cluster admin Password2 root /tmp/ovm/ovm_util/ovm-utils_2.1"
 	echo "====================================================================================================="
 	echo ""
 	exit -1
 fi
+
+check_connection
 
 if [[ $TYPE == "vms" ]]; then
 	for i in $(list_vm); do
@@ -106,5 +118,3 @@ fi
 ###############################################
 # CAPIRE DOVE SEGNALARE ANOMALIA vm_with_space
 ###############################################
-
-
