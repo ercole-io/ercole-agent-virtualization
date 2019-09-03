@@ -76,6 +76,10 @@ function get_cpu_from_server {
 	$SSHOVMCLI show server name=$1 |grep "  Processors = " |awk '{print $4}'
 }
 
+function get_socket_from_server {
+	$SSHOVMCLI show server name=$1 |grep "Sockets" |awk '{print $6}'
+}
+
 
 if [ $# -ne 6 ]
  then
@@ -106,8 +110,9 @@ elif [[ $TYPE == "cluster" ]]; then
 	for i in $(list_server_pool); do
 		for j in $(get_servers_from_pool "$i"); do
 			CLUSTERCPU=$(($CLUSTERCPU + $(get_cpu_from_server $j)))
+			CLUSTERSOCKET=$(($CLUSTERSOCKET + $(get_socket_from_server $j)))
 		done
-		echo "$i,$CLUSTERCPU"
+		echo "$i,$CLUSTERCPU,$CLUSTERSOCKET"
 	done
 
 else
