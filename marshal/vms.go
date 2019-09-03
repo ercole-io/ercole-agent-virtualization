@@ -23,10 +23,7 @@ func VmwareVMs(cmdOutput []byte) []model.VMInfo {
 			ClusterName: strings.TrimSpace(splitted[0]),
 			Name:        strings.TrimSpace(splitted[1]),
 			Hostname:    strings.TrimSpace(splitted[2]),
-			CappedCPU:   0,
-		}
-		if len(splitted) >= 4 {
-			vm.CappedCPU = parseInt(strings.TrimSpace(splitted[3]))
+			CappedCPU:   false,
 		}
 
 		if vm.Hostname == "" {
@@ -54,7 +51,7 @@ func OvmVMs(cmdOutput []byte) []model.VMInfo {
 			ClusterName: strings.TrimSpace(splitted[0]),
 			Name:        strings.TrimSpace(splitted[1]),
 			Hostname:    strings.TrimSpace(splitted[2]),
-			CappedCPU:   parseInt(strings.TrimSpace(splitted[3])),
+			CappedCPU:   parseBool(strings.TrimSpace(splitted[3])),
 		}
 
 		if vm.Hostname == "" {

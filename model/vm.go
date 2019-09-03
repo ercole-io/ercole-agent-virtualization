@@ -20,5 +20,5 @@ type VMInfo struct {
 	Name        string
 	ClusterName string
 	Hostname    string //Hostname or IP address
-	CappedCPU   int
+	CappedCPU   bool
 }

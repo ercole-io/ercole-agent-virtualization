@@ -64,8 +64,7 @@ func cleanTr(s string) string {
 }
 
 func parseBool(s string) bool {
-
-	return s == "Y"
+	return s == "Y" || s == "1"
 }
 
 func parseInt(s string) int {

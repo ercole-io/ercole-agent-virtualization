@@ -83,7 +83,7 @@ func buildData(configuration config.Configuration) {
 			out = fetcher("ovm", "cluster", hv.Endpoint, hv.Username, hv.Password, hv.OvmUserKey, hv.OvmControl)
 			clusters = append(clusters, marshal.Clusters(out)...)
 			out = fetcher("ovm", "vms", hv.Endpoint, hv.Username, hv.Password, hv.OvmUserKey, hv.OvmControl)
-			vms = append(vms, marshal.VmwareVMs(out)...)
+			vms = append(vms, marshal.OvmVMs(out)...)
 		default:
 			log.Println("Hypervisor not supported:", hv.Type, "(", hv, ")")
 		}
