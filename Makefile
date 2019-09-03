@@ -24,4 +24,3 @@ install-bin:
 
 install-config:
 	install -m 644 config.json $(DESTDIR)/config.json
-	install -m 644 creds.csv $(DESTDIR)/creds.csv
