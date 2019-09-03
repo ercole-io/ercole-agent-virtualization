@@ -25,6 +25,9 @@ func VmwareVMs(cmdOutput []byte) []model.VMInfo {
 			Hostname:    strings.TrimSpace(splitted[2]),
 			CappedCPU:   0,
 		}
+		if len(splitted) >= 4 {
+			vm.CappedCPU = parseInt(strings.TrimSpace(splitted[3]))
+		}
 
 		if vm.Hostname == "" {
 			vm.Hostname = vm.Name

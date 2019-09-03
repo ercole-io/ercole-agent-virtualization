@@ -14,6 +14,14 @@
             "endpoint": "10.20.30.40", 
             "username": "reader@vsphere.local", 
             "password": "reader"
+        },
+        {
+            "type": "ovm",
+            "endpoint": "10.20.30.40",
+            "username": "reader",
+            "password": "R34d3r",
+            "ovmuserkey": "92838932423",
+            "ovmcontrol": "/path/to/ovmcontrol"
         }
     ]
 }

@@ -22,10 +22,15 @@ func Clusters(cmdOutput []byte) []model.ClusterInfo {
 
 		//Check if the line is not the header line
 		clusterInfo := model.ClusterInfo{
-			Name:    strings.TrimSpace(splitted[0]),
-			CPU:     parseInt(splitted[1]),
-			Sockets: parseInt(splitted[2]),
-			VMs:     []model.VMInfo{},
+			Name: strings.TrimSpace(splitted[0]),
+			CPU:  parseInt(splitted[1]),
+			VMs:  []model.VMInfo{},
+		}
+
+		if len(splitted) >= 3 {
+			clusterInfo.Sockets = parseInt(splitted[2])
+		} else {
+			clusterInfo.Sockets = 1
 		}
 
 		clusters = append(clusters, clusterInfo)
