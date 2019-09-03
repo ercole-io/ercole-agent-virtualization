@@ -68,10 +68,21 @@ func buildData(configuration config.Configuration) {
 	host.Location = configuration.Location
 	out = fetcher("filesystem")
 	filesystems := marshal.Filesystems(out)
-	out = pwshFetcher("vmware.ps1", "-s", "cluster")
-	clusters := marshal.Clusters(out)
-	out = pwshFetcher("vmware.ps1", "-s", "vms")
-	vms := marshal.VmwareVMs(out)
+
+	var clusters []model.ClusterInfo = []model.ClusterInfo{}
+	var vms []model.VMInfo = []model.VMInfo{}
+
+	for _, hv := range configuration.Hypervisors {
+		switch hv.Type {
+		case "vmware":
+			out = pwshFetcher("vmware.ps1", "-s", "cluster", hv.Endpoint, hv.Username, hv.Password)
+			clusters = append(clusters, marshal.Clusters(out)...)
+			out = pwshFetcher("vmware.ps1", "-s", "vms", hv.Endpoint, hv.Username, hv.Password)
+			vms = append(vms, marshal.VmwareVMs(out)...)
+		default:
+			log.Println("Hypervisor not supported:", hv.Type, "(", hv, ")")
+		}
+	}
 
 	clusterMap := make(map[string][]model.VMInfo)
 	clusters = append(clusters, model.ClusterInfo{
