@@ -48,6 +48,7 @@ install -m 644 package/rhel7/ercole-agent-virtualization.service $RPM_BUILD_ROOT
 /opt/ercole-agent-virtualization/fetch/filesystem
 /opt/ercole-agent-virtualization/fetch/host
 /opt/ercole-agent-virtualization/fetch/vmware.ps1
+/opt/ercole-agent-virtualization/fetch/ovm
 /opt/ercole-agent-virtualization/ercole-agent-virtualization
 /etc/systemd/system/ercole-agent-virtualization.service
 %changelog

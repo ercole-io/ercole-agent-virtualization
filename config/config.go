@@ -39,10 +39,12 @@ type Configuration struct {
 
 // Hypervisor holds the parameters used to connect to the hypervisor
 type Hypervisor struct {
-	Type     string
-	Endpoint string
-	Username string
-	Password string
+	Type       string
+	Endpoint   string
+	Username   string
+	Password   string
+	OvmUserKey string
+	OvmControl string
 }
 
 // ReadConfig reads the configuration file from the current dir
