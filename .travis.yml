@@ -60,14 +60,14 @@ deploy:
   on:
     tags: true
 
-deploy:
-  provider: releases
-  file_glob: true
-  file: dist/*
-  skip_cleanup: true
-  api_key:
-    secure: uXn+nWPFu1mEf5ixZtYPRcWZkoUxi4LP7YWHzLtutnelHGFW68fN0zbas7zP4YVm9sCmBHviQzEjfrHbBREZUYK627SNiN+0LIYXT2xyiRoWJGToLYnteu5D0bkTIe7t96Qtz4mg9ZzQELF+vrlAnY0iM6R+IwEfzKqK7Tm0lGKPjSnYrd8Xh2Gw0uycyMJYu69fL+itPWkL10eqtELi9LfmkY0Vw05h7hIMnpBCCbrWWZEqitbacCnRthwxpSqLfMdDSaB5JZGLCHnPCJFtujV62HEeA336cb7Ojr6RLBi7Zrl0zEhvp8arRg1N3T2HeonxfeA67O1yBCIMpiFTyIluhbsvsA+46CjC+0XeKb6sKbDw7I4HrTlPLV5SQ+W9p5VTlRhPfxdTgTvTBkLMGuGIQMCJ9012hcXu42+0az2lvd0ayVTL5QtkmxBBQSIqP9tqbCabmqgthsvv+jfx+XTU8HmlrkkW7tUR5pL8UqNB99cM0jTbbXY1cIkIGixmUK14xRgmnayf7Ma/+3izVmTJMbE5xZRusejHEdGUlzVPmeFRAwonyg5UkjDY1d35hd6MSsI+6zUUyfTZzGdhaG1q2cpXk/W0+1H8B0gMYYakhIQF7GgAoA9KDMbuS/4Xyx/I7DLKOuQ1tSPQHN5FqHsgzI4Mq0fQD0NbFPxdPas=
-  name: "latest"
-  body: "latest"
-  prerelease: true
-  overwrite: true
+# deploy:
+#   provider: releases
+#   file_glob: true
+#   file: dist/*
+#   skip_cleanup: true
+#   api_key:
+#     secure: uXn+nWPFu1mEf5ixZtYPRcWZkoUxi4LP7YWHzLtutnelHGFW68fN0zbas7zP4YVm9sCmBHviQzEjfrHbBREZUYK627SNiN+0LIYXT2xyiRoWJGToLYnteu5D0bkTIe7t96Qtz4mg9ZzQELF+vrlAnY0iM6R+IwEfzKqK7Tm0lGKPjSnYrd8Xh2Gw0uycyMJYu69fL+itPWkL10eqtELi9LfmkY0Vw05h7hIMnpBCCbrWWZEqitbacCnRthwxpSqLfMdDSaB5JZGLCHnPCJFtujV62HEeA336cb7Ojr6RLBi7Zrl0zEhvp8arRg1N3T2HeonxfeA67O1yBCIMpiFTyIluhbsvsA+46CjC+0XeKb6sKbDw7I4HrTlPLV5SQ+W9p5VTlRhPfxdTgTvTBkLMGuGIQMCJ9012hcXu42+0az2lvd0ayVTL5QtkmxBBQSIqP9tqbCabmqgthsvv+jfx+XTU8HmlrkkW7tUR5pL8UqNB99cM0jTbbXY1cIkIGixmUK14xRgmnayf7Ma/+3izVmTJMbE5xZRusejHEdGUlzVPmeFRAwonyg5UkjDY1d35hd6MSsI+6zUUyfTZzGdhaG1q2cpXk/W0+1H8B0gMYYakhIQF7GgAoA9KDMbuS/4Xyx/I7DLKOuQ1tSPQHN5FqHsgzI4Mq0fQD0NbFPxdPas=
+#   name: "latest"
+#   body: "latest"
+#   prerelease: true
+#   overwrite: true
