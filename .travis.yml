@@ -36,6 +36,8 @@ install:
     ${PACKAGE_BUILD_IMAGE} /bin/cat
 
 script:
+  - sed "s/\"latest\"/\"${VERSION}\"/" main.go > /tmp/main.go
+  - cp /tmp/main.go main.go
   - go build -o ${BIN} main.go
   - sed -i "s|ERCOLE_VERSION|${VERSION}|g" package/rhel7/ercole-agent-virtualization.spec
   - if [ $DIST_FAMILY == "RHEL" ]; then docker exec -it package_builder /bin/sh -c "cd
