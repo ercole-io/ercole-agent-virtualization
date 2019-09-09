@@ -16,12 +16,13 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #################################################################################################
-# Prereq   	- ovm_vmcontrol installed on ovm manager
-#	   		- Key exchange with ovm manager user who can run ovm_vmcontrol
-#  	   		- Vms must not contain spaces, those with spaces will be ignored
-#	   		- sshpass installed on server that have ercole-agent-virtualization installed
-#	   		- ovmcli installed on ovmmanager (From version 3.2.1)
-#	   		- Communication in ssh on port 10000 from ercole-agent-virtualization to ovmmanager
+# Prereq
+#	- ovm_vmcontrol installed on ovm manager
+#	- Key exchange with ovm manager user who can run ovm_vmcontrol
+#	- Vms must not contain spaces, those with spaces will be ignored
+#	- sshpass installed on server that have ercole-agent-virtualization installed
+#	- ovmcli installed on ovmmanager (From version 3.2.1)
+#	- Communication in ssh on port 10000 from ercole-agent-virtualization to ovmmanager
 #################################################################################################
 
 ## TYPE - vms|cluster
