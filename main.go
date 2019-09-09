@@ -37,7 +37,7 @@ import (
 )
 
 //var configuration config.Configuration
-var version string = "latest"
+var version = "latest"
 var hostDataSchemaVersion = 1
 
 func main() {
@@ -209,16 +209,31 @@ func pwshFetcher(fetcherName string, args ...string) []byte {
 }
 
 func fetcher(fetcherName string, args ...string) []byte {
+	var (
+		cmd    *exec.Cmd
+		err    error
+		stdout bytes.Buffer
+		stderr bytes.Buffer
+	)
+
 	log.Println("Fetching " + fetcherName + ": " + strings.Join(args, " "))
 
 	baseDir := getBaseDir()
 
-	out, err := exec.Command(baseDir+"/fetch/"+fetcherName, args...).Output()
+	cmd = exec.Command(baseDir+"/fetch/"+fetcherName, args...)
+	cmd.Stdout = &stdout
+	cmd.Stderr = &stderr
+	err = cmd.Run()
+	// log.Println(stderr)
+	if len(stderr.Bytes()) > 0 {
+		log.Print(string(stderr.Bytes()))
+	}
+
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	return out
+	return stdout.Bytes()
 }
 
 func getBaseDir() string {
