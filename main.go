@@ -38,6 +38,7 @@ import (
 
 //var configuration config.Configuration
 var version string = "latest"
+var hostDataSchemaVersion = 1
 
 func main() {
 
@@ -123,8 +124,9 @@ func buildData(configuration config.Configuration) {
 	}
 	hostData.Environment = configuration.Envtype
 	hostData.Location = configuration.Location
-	hostData.Version = version
 	hostData.HostType = configuration.HostType
+	hostData.Version = version
+	hostData.HostDataSchemaVersion = hostDataSchemaVersion
 	hostData.Databases = ""
 	hostData.Schemas = ""
 
