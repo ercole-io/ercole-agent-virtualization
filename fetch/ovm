@@ -34,7 +34,8 @@ OVMPASS="$4"
 OVMUSERKEY=$5
 ## Path that contain ovm_vmcontrol
 OVMCONTROL=$6
-SSHOVMCLI="sshpass -p '$OVMPASS' ssh ${OVMUSER}@${OVMHOST} -p 10000"
+SSH_ARGS=(-o StrictHostKeyChecking=no)
+SSHOVMCLI="sshpass -p $OVMPASS ssh "${SSH_ARGS[@]}" ${OVMUSER}@${OVMHOST} -p 10000"
 CLUSTERCPU=0
 
 function check_connection
@@ -42,7 +43,7 @@ function check_connection
 	ovmcli_access=$($SSHOVMCLI list manager |grep -c Success)
 	if [[ $ovmcli_access != 1 ]]; then
 	  exit 1
-		elif [[ $(ssh ${OVMUSERKEY}@${OVMHOST} "if [ ! -d ${OVMCONTROL} ]; then echo 1; else echo 0; fi") -eq 1 ]]; then
+		elif [[ $(ssh "${SSH_ARGS[@]}" ${OVMUSERKEY}@${OVMHOST} "if [ ! -d ${OVMCONTROL} ]; then echo 1; else echo 0; fi") -eq 1 ]]; then
 		exit 2
 	fi
 }
@@ -83,7 +84,7 @@ function vm_with_space {
 }
 
 function get_cpu_pinned_vm {
-	ssh ${OVMUSERKEY}@${OVMHOST} "cd ${OVMCONTROL}; ./ovm_vmcontrol -u ${OVMUSER} -p ${OVMPASS} -h ${OVMHOST} -v $1 -c getvcpu"
+	ssh "${SSH_ARGS[@]}" ${OVMUSERKEY}@${OVMHOST} "cd ${OVMCONTROL}; ./ovm_vmcontrol -u ${OVMUSER} -p ${OVMPASS} -h ${OVMHOST} -v $1 -c getvcpu"
 }
 
 function get_cpu_from_server {
@@ -112,6 +113,7 @@ fi
 check_connection
 
 if [[ $TYPE == "vms" ]]; then
+	vm_with_space >&2
 	for i in $(list_vm); do
 	if [[ $(get_cpu_pinned_vm $i|grep -c "Current pinned CPU") -eq 1 ]]; then
 		PINNED=1
@@ -120,6 +122,7 @@ if [[ $TYPE == "vms" ]]; then
 	fi
 	echo "$(get_pool_from_vmname "$i"),$i,,$PINNED"
 	done
+	echo 
 elif [[ $TYPE == "cluster" ]]; then
 	for i in $(list_server_pool); do
 		for j in $(get_servers_from_pool "$i"); do
@@ -133,7 +136,3 @@ else
 	echo "Option not valid"
 	exit -1
 fi
-
-###############################################
-# CAPIRE DOVE SEGNALARE ANOMALIA vm_with_space
-###############################################
