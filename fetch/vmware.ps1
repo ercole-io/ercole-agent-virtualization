@@ -39,7 +39,7 @@ Connect-VIServer "$endpoint" -User "$username" -Password "$password" | Out-Null
 New-VIProperty -Name NumCPU -ObjectType Cluster -Value {
 			$TotalPCPU = 0
 			$Args[0] | Get-VMHost | Foreach {
-				$TotalPCPU += $_.NumCPU
+				$TotalPCPU += $_.ExtensionData.Hardware.CpuInfo.NumCpuCores
 			}
 			$TotalPCPU
 	} `
