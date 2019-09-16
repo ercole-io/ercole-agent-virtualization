@@ -67,6 +67,10 @@ function get_servers_from_pool {
 	$SSHOVMCLI show serverpool name=$1 |grep '  Server .* = .*:.*:.*:' |cut -d "[" -f2 |cut -d "]" -f1
 }
 
+function get_server_from_vm {
+	$SSHOVMCLI show vm name=$1 | grep "  Server =" |cut -d "[" -f2 |cut -d "]" -f1
+}
+
 function list_server_pool {
 	$SSHOVMCLI list serverpool |grep "  id:" |cut -d ":" -f3
 }
@@ -123,7 +127,7 @@ if [[ $TYPE == "vms" ]]; then
 	else
 		PINNED=
 	fi
-	echo "$(get_pool_from_vmname "$i"),$i,,$PINNED"
+	echo "$(get_pool_from_vmname "$i"),$i,,$PINNED,$(get_server_from_vm "$i")"
 	done
 	echo 
 elif [[ $TYPE == "cluster" ]]; then
