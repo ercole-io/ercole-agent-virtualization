@@ -55,8 +55,8 @@ New-VIProperty -Name NumSockets -ObjectType Cluster -Value {
 	-Force -WarningAction:SilentlyContinue | Out-Null
 switch ($s.ToUpper()) {
 	"VMS" {
-		# OUTPUT FORMAT: cluster name, vm name, guest os hostname
-		Get-VM | Select @{N="Cluster";E={Get-Cluster -VM $_}}, Name, @{N="guestHostname";E={$_.ExtensionData.Guest.HostName}} | ConvertTo-CSV | % { $_ -replace '"', ""}
+		# OUTPUT FORMAT: cluster name, vm name, guest os hostname, 
+		Get-VM | Select @{N="Cluster";E={Get-Cluster -VM $}}, Name, @{N="guestHostname";E={$.ExtensionData.Guest.HostName}}, @{N="PhysicalHost";E={Get-VMHost -VM $}} | ConvertTo-CSV | % { $_ -replace '"', ""}
 	}
 	"CLUSTER" {
 		# OUTPUT FORMAT: cluster name, core sum, socket sum

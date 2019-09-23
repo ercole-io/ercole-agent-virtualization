@@ -2,6 +2,7 @@ package marshal
 
 import (
 	"bufio"
+	"fmt"
 	"strings"
 
 	"github.com/ercole-io/ercole-agent-virtualization/model"
@@ -20,10 +21,11 @@ func VmwareVMs(cmdOutput []byte) []model.VMInfo {
 			continue
 		}
 		vm := model.VMInfo{
-			ClusterName: strings.TrimSpace(splitted[0]),
-			Name:        strings.TrimSpace(splitted[1]),
-			Hostname:    strings.TrimSpace(splitted[2]),
-			CappedCPU:   false,
+			ClusterName:  strings.TrimSpace(splitted[0]),
+			Name:         strings.TrimSpace(splitted[1]),
+			Hostname:     strings.TrimSpace(splitted[2]),
+			CappedCPU:    false,
+			PhysicalHost: strings.TrimSpace(splitted[3]),
 		}
 
 		if vm.Hostname == "" {
@@ -44,14 +46,16 @@ func OvmVMs(cmdOutput []byte) []model.VMInfo {
 	for scanner.Scan() {
 		line := scanner.Text()
 		splitted := strings.Split(line, ",")
-		if len(splitted) == 4 && splitted[0] == "Cluster" && splitted[1] == "Name" && splitted[2] == "guestHostname" {
+		if len(splitted) < 5 {
 			continue
 		}
+		fmt.Println(strings.Join(splitted, "|##|"))
 		vm := model.VMInfo{
-			ClusterName: strings.TrimSpace(splitted[0]),
-			Name:        strings.TrimSpace(splitted[1]),
-			Hostname:    strings.TrimSpace(splitted[2]),
-			CappedCPU:   parseBool(strings.TrimSpace(splitted[3])),
+			ClusterName:  strings.TrimSpace(splitted[0]),
+			Name:         strings.TrimSpace(splitted[1]),
+			Hostname:     strings.TrimSpace(splitted[2]),
+			CappedCPU:    parseBool(strings.TrimSpace(splitted[3])),
+			PhysicalHost: strings.TrimSpace(splitted[4]),
 		}
 
 		if vm.Hostname == "" {
