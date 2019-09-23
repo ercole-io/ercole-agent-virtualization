@@ -17,8 +17,9 @@ package model
 
 // VMInfo holds info about the vm
 type VMInfo struct {
-	Name        string
-	ClusterName string
-	Hostname    string //Hostname or IP address
-	CappedCPU   bool
+	Name         string
+	ClusterName  string
+	Hostname     string //Hostname or IP address
+	CappedCPU    bool
+	PhysicalHost string
 }
