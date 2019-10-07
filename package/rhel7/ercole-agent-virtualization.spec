@@ -6,6 +6,8 @@ Summary:        Agent Virtualization for ercole
 License:        Proprietary
 URL:            https://github.com/ercole-io/%{name}
 Source0:        https://github.com/ercole-io/%{name}/archive/%{name}-%{version}.tar.gz
+Requires: systemd
+BuildRequires: systemd
 
 Group:          Tools
 
@@ -34,11 +36,22 @@ exit 0
 
 rm -rf $RPM_BUILD_ROOT
 make DESTDIR=$RPM_BUILD_ROOT/opt/ercole-agent-virtualization install
-install -d $RPM_BUILD_ROOT/etc/systemd/system
+
 install -d $RPM_BUILD_ROOT/opt/ercole-agent-virtualization/run
-install -m 644 package/rhel7/ercole-agent-virtualization.service $RPM_BUILD_ROOT/etc/systemd/system/ercole-agent-virtualization.service
+install -d %{buildroot}%{_unitdir} 
+install -d %{buildroot}%{_presetdir}
+install -m 0644 package/rhel7/ercole-agent-virtualization.service %{buildroot}%{_unitdir}/%{name}.service
+install -m 0644 package/rhel7/60-ercole-agent-virtualization.preset %{buildroot}%{_presetdir}/60-%{name}.preset
 
 %post
+/usr/bin/systemctl preset %{name}.service >/dev/null 2>&1 ||:
+
+%preun
+/usr/bin/systemctl --no-reload disable %{name}.service >/dev/null 2>&1 || :
+/usr/bin/systemctl stop %{name}.service >/dev/null 2>&1 ||:
+
+%postun
+/usr/bin/systemctl daemon-reload >/dev/null 2>&1 ||:
 
 %files
 %attr(-,ercole,-) /opt/ercole-agent-virtualization/run
@@ -50,7 +63,9 @@ install -m 644 package/rhel7/ercole-agent-virtualization.service $RPM_BUILD_ROOT
 /opt/ercole-agent-virtualization/fetch/vmware.ps1
 /opt/ercole-agent-virtualization/fetch/ovm
 /opt/ercole-agent-virtualization/ercole-agent-virtualization
-/etc/systemd/system/ercole-agent-virtualization.service
+%{_unitdir}/ercole-agent-virtualization.service
+%{_presetdir}/60-ercole-agent-virtualization.preset
+
 %changelog
 * Mon May  7 2018 Simone Rota <srota2@sorint.it>
 - 
