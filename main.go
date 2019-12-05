@@ -38,7 +38,7 @@ import (
 
 //var configuration config.Configuration
 var version = "latest"
-var hostDataSchemaVersion = 3
+var hostDataSchemaVersion = 5
 
 func main() {
 
