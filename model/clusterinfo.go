@@ -18,6 +18,7 @@ package model
 //ClusterInfo hold informations about the cluster
 type ClusterInfo struct {
 	Name    string
+	Type    string
 	CPU     int
 	Sockets int
 	VMs     []VMInfo

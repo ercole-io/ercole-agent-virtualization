@@ -77,12 +77,20 @@ func buildData(configuration config.Configuration) {
 		switch hv.Type {
 		case "vmware":
 			out = pwshFetcher("vmware.ps1", "-s", "cluster", hv.Endpoint, hv.Username, hv.Password)
-			clusters = append(clusters, marshal.Clusters(out)...)
+			fetchedClusters := marshal.Clusters(out)
+			for i := range fetchedClusters {
+				fetchedClusters[i].Type = hv.Type
+			}
+			clusters = append(clusters, fetchedClusters...)
 			out = pwshFetcher("vmware.ps1", "-s", "vms", hv.Endpoint, hv.Username, hv.Password)
 			vms = append(vms, marshal.VmwareVMs(out)...)
 		case "ovm":
 			out = fetcher("ovm", "cluster", hv.Endpoint, hv.Username, hv.Password, hv.OvmUserKey, hv.OvmControl)
-			clusters = append(clusters, marshal.Clusters(out)...)
+			fetchedClusters := marshal.Clusters(out)
+			for i := range fetchedClusters {
+				fetchedClusters[i].Type = hv.Type
+			}
+			clusters = append(clusters, fetchedClusters...)
 			out = fetcher("ovm", "vms", hv.Endpoint, hv.Username, hv.Password, hv.OvmUserKey, hv.OvmControl)
 			vms = append(vms, marshal.OvmVMs(out)...)
 		default:
@@ -93,6 +101,7 @@ func buildData(configuration config.Configuration) {
 	clusterMap := make(map[string][]model.VMInfo)
 	clusters = append(clusters, model.ClusterInfo{
 		Name:    "not_in_cluster",
+		Type:    "unknown",
 		CPU:     0,
 		Sockets: 0,
 		VMs:     []model.VMInfo{},
