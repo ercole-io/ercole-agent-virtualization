@@ -203,11 +203,10 @@ func sendData(data *model.HostData, configuration config.Configuration) {
 }
 
 func pwshFetcher(fetcherName string, args ...string) []byte {
-	log.Println("Pwshfetching " + fetcherName + ": " + strings.Join(args, " "))
-
 	baseDir := getBaseDir()
 
 	args = append([]string{baseDir + "/fetch/" + fetcherName}, args...)
+	log.Println("Pwshfetching /usr/bin/pwsh/" + " " + strings.Join(args, " "))
 	out, err := exec.Command("/usr/bin/pwsh", args...).Output()
 	if err != nil {
 		log.Print(string(out))
@@ -225,9 +224,8 @@ func fetcher(fetcherName string, args ...string) []byte {
 		stderr bytes.Buffer
 	)
 
-	log.Println("Fetching " + fetcherName + ": " + strings.Join(args, " "))
-
 	baseDir := getBaseDir()
+	log.Println("Fetching " + baseDir + "/fetch/" + fetcherName + " " + strings.Join(args, " "))
 
 	cmd = exec.Command(baseDir+"/fetch/"+fetcherName, args...)
 	cmd.Stdout = &stdout
