@@ -51,7 +51,7 @@ type Hypervisor struct {
 // or /opt/ercole-agent
 func ReadConfig() Configuration {
 
-	baseDir := getBaseDir()
+	baseDir := GetBaseDir()
 
 	configFile := baseDir + "/config.json"
 	ex := exists(configFile)
@@ -84,12 +84,10 @@ func exists(name string) bool {
 	return true
 }
 
-func getBaseDir() string {
-
+// GetBaseDir return path to the directory where is the executable
+func GetBaseDir() string {
 	s, _ := os.Readlink("/proc/self/exe")
-
 	s = filepath.Dir(s)
 
 	return s
-
 }

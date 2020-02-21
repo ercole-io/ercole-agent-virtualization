@@ -30,6 +30,7 @@ import (
 	"time"
 
 	"github.com/ercole-io/ercole-agent-virtualization/config"
+	"github.com/ercole-io/ercole-agent-virtualization/fetch"
 	"github.com/ercole-io/ercole-agent-virtualization/marshal"
 	"github.com/ercole-io/ercole-agent-virtualization/model"
 	"github.com/ercole-io/ercole-agent-virtualization/scheduler"
@@ -74,28 +75,8 @@ func buildData(configuration config.Configuration) {
 	var vms []model.VMInfo = []model.VMInfo{}
 
 	for _, hv := range configuration.Hypervisors {
-		switch hv.Type {
-		case "vmware":
-			out = pwshFetcher("vmware.ps1", "-s", "cluster", hv.Endpoint, hv.Username, hv.Password)
-			fetchedClusters := marshal.Clusters(out)
-			for i := range fetchedClusters {
-				fetchedClusters[i].Type = hv.Type
-			}
-			clusters = append(clusters, fetchedClusters...)
-			out = pwshFetcher("vmware.ps1", "-s", "vms", hv.Endpoint, hv.Username, hv.Password)
-			vms = append(vms, marshal.VmwareVMs(out)...)
-		case "ovm":
-			out = fetcher("ovm", "cluster", hv.Endpoint, hv.Username, hv.Password, hv.OvmUserKey, hv.OvmControl)
-			fetchedClusters := marshal.Clusters(out)
-			for i := range fetchedClusters {
-				fetchedClusters[i].Type = hv.Type
-			}
-			clusters = append(clusters, fetchedClusters...)
-			out = fetcher("ovm", "vms", hv.Endpoint, hv.Username, hv.Password, hv.OvmUserKey, hv.OvmControl)
-			vms = append(vms, marshal.OvmVMs(out)...)
-		default:
-			log.Println("Hypervisor not supported:", hv.Type, "(", hv, ")")
-		}
+		clusters = append(clusters, fetch.GetClusters(hv)...)
+		vms = append(vms, fetch.GetVirtualMachines(hv)...)
 	}
 
 	clusterMap := make(map[string][]model.VMInfo)
