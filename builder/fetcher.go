@@ -20,7 +20,7 @@ func fetchClusters(hv config.Hypervisor) []model.ClusterInfo {
 		out = pwshFetcher("vmware.ps1", "-s", "cluster", hv.Endpoint, hv.Username, hv.Password)
 
 	case "ovm":
-		out = ovmFetcher("ovm", "cluster", hv.Endpoint, hv.Username, hv.Password, hv.OvmUserKey, hv.OvmControl)
+		out = fetcher("ovm", "cluster", hv.Endpoint, hv.Username, hv.Password, hv.OvmUserKey, hv.OvmControl)
 
 	default:
 		log.Println("Hypervisor not supported:", hv.Type, "(", hv, ")")
@@ -45,7 +45,7 @@ func fetchVirtualMachines(hv config.Hypervisor) []model.VMInfo {
 		vms = marshal.VmwareVMs(out)
 
 	case "ovm":
-		out := ovmFetcher("ovm", "vms", hv.Endpoint, hv.Username, hv.Password, hv.OvmUserKey, hv.OvmControl)
+		out := fetcher("ovm", "vms", hv.Endpoint, hv.Username, hv.Password, hv.OvmUserKey, hv.OvmControl)
 		vms = marshal.OvmVMs(out)
 
 	default:
@@ -68,33 +68,6 @@ func pwshFetcher(fetcherName string, args ...string) []byte {
 	}
 
 	return out
-}
-
-func ovmFetcher(fetcherName string, args ...string) []byte {
-	var (
-		cmd    *exec.Cmd
-		err    error
-		stdout bytes.Buffer
-		stderr bytes.Buffer
-	)
-
-	baseDir := config.GetBaseDir()
-	log.Println("Fetching " + baseDir + "/fetch/" + fetcherName + " " + strings.Join(args, " "))
-
-	cmd = exec.Command(baseDir+"/fetch/"+fetcherName, args...)
-	cmd.Stdout = &stdout
-	cmd.Stderr = &stderr
-	err = cmd.Run()
-
-	if len(stderr.Bytes()) > 0 {
-		log.Print(string(stderr.Bytes()))
-	}
-
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	return stdout.Bytes()
 }
 
 func fetcher(fetcherName string, args ...string) []byte {
