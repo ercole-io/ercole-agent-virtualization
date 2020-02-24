@@ -42,7 +42,6 @@ var version = "latest"
 var hostDataSchemaVersion = 5
 
 func main() {
-
 	rand.Seed(243243)
 	configuration := config.ReadConfig()
 
@@ -58,11 +57,9 @@ func main() {
 
 	scheduler.Start()
 	scheduler.Wait()
-
 }
 
 func buildData(configuration config.Configuration) {
-
 	out := fetcher("host")
 	host := marshal.Host(out)
 
@@ -74,9 +71,26 @@ func buildData(configuration config.Configuration) {
 	var clusters []model.ClusterInfo = []model.ClusterInfo{}
 	var vms []model.VMInfo = []model.VMInfo{}
 
+	countHypervisors := len(configuration.Hypervisors)
+	clustersChannel := make(chan []model.ClusterInfo, countHypervisors)
+	virtualMachinesChannel := make(chan []model.VMInfo, countHypervisors)
+
 	for _, hv := range configuration.Hypervisors {
-		clusters = append(clusters, fetch.GetClusters(hv)...)
-		vms = append(vms, fetch.GetVirtualMachines(hv)...)
+		go func(hv config.Hypervisor) {
+			clustersChannel <- fetch.GetClusters(hv)
+		}(hv)
+
+		go func(hv config.Hypervisor) {
+			virtualMachinesChannel <- fetch.GetVirtualMachines(hv)
+		}(hv)
+	}
+
+	for i := 0; i < countHypervisors; i++ {
+		clusters = append(clusters, (<-clustersChannel)...)
+	}
+
+	for i := 0; i < countHypervisors; i++ {
+		vms = append(vms, (<-virtualMachinesChannel)...)
 	}
 
 	clusterMap := make(map[string][]model.VMInfo)
@@ -180,7 +194,6 @@ func sendData(data *model.HostData, configuration config.Configuration) {
 	}
 
 	log.Println("Sending result:", sendResult)
-
 }
 
 func pwshFetcher(fetcherName string, args ...string) []byte {

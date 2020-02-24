@@ -82,7 +82,7 @@ func ovmFetcher(fetcherName string, args ...string) []byte {
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
 	err = cmd.Run()
-	// log.Println(stderr)
+
 	if len(stderr.Bytes()) > 0 {
 		log.Print(string(stderr.Bytes()))
 	}
