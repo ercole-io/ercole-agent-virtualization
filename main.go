@@ -23,15 +23,10 @@ import (
 	"math/rand"
 	"net/http"
 	"net/url"
-	"os"
-	"os/exec"
-	"path/filepath"
-	"strings"
 	"time"
 
+	"github.com/ercole-io/ercole-agent-virtualization/builder"
 	"github.com/ercole-io/ercole-agent-virtualization/config"
-	"github.com/ercole-io/ercole-agent-virtualization/fetch"
-	"github.com/ercole-io/ercole-agent-virtualization/marshal"
 	"github.com/ercole-io/ercole-agent-virtualization/model"
 	"github.com/ercole-io/ercole-agent-virtualization/scheduler"
 	"github.com/ercole-io/ercole-agent-virtualization/scheduler/storage"
@@ -45,12 +40,12 @@ func main() {
 	rand.Seed(243243)
 	configuration := config.ReadConfig()
 
-	buildData(configuration) // first run
+	doBuildAndSend(configuration)
+
 	memStorage := storage.NewMemoryStorage()
 	scheduler := scheduler.New(memStorage)
 
-	_, err := scheduler.RunEvery(time.Duration(configuration.Frequency)*time.Hour, buildData, configuration)
-
+	_, err := scheduler.RunEvery(time.Duration(configuration.Frequency)*time.Hour, doBuildAndSend, configuration)
 	if err != nil {
 		log.Fatal("Error sending data", err)
 	}
@@ -59,81 +54,8 @@ func main() {
 	scheduler.Wait()
 }
 
-func buildData(configuration config.Configuration) {
-	out := fetcher("host")
-	host := marshal.Host(out)
-
-	host.Environment = configuration.Envtype
-	host.Location = configuration.Location
-	out = fetcher("filesystem")
-	filesystems := marshal.Filesystems(out)
-
-	var clusters []model.ClusterInfo = []model.ClusterInfo{}
-	var vms []model.VMInfo = []model.VMInfo{}
-
-	countHypervisors := len(configuration.Hypervisors)
-	clustersChannel := make(chan []model.ClusterInfo, countHypervisors)
-	virtualMachinesChannel := make(chan []model.VMInfo, countHypervisors)
-
-	for _, hv := range configuration.Hypervisors {
-		go func(hv config.Hypervisor) {
-			clustersChannel <- fetch.GetClusters(hv)
-		}(hv)
-
-		go func(hv config.Hypervisor) {
-			virtualMachinesChannel <- fetch.GetVirtualMachines(hv)
-		}(hv)
-	}
-
-	for i := 0; i < countHypervisors; i++ {
-		clusters = append(clusters, (<-clustersChannel)...)
-	}
-
-	for i := 0; i < countHypervisors; i++ {
-		vms = append(vms, (<-virtualMachinesChannel)...)
-	}
-
-	clusterMap := make(map[string][]model.VMInfo)
-	clusters = append(clusters, model.ClusterInfo{
-		Name:    "not_in_cluster",
-		Type:    "unknown",
-		CPU:     0,
-		Sockets: 0,
-		VMs:     []model.VMInfo{},
-	})
-	for _, vm := range vms {
-		if vm.ClusterName == "" {
-			vm.ClusterName = "not_in_cluster"
-		}
-		clusterMap[vm.ClusterName] = append(clusterMap[vm.ClusterName], vm)
-	}
-	for i := range clusters {
-		if clusterMap[clusters[i].Name] != nil {
-			clusters[i].VMs = clusterMap[clusters[i].Name]
-		} else {
-			clusters[i].VMs = []model.VMInfo{}
-		}
-	}
-	hostData := new(model.HostData)
-	extraInfo := new(model.ExtraInfo)
-	extraInfo.Filesystems = filesystems
-	extraInfo.Databases = []model.Database{}
-	extraInfo.Clusters = clusters
-	hostData.Extra = *extraInfo
-	hostData.Info = host
-	hostData.Hostname = host.Hostname
-	// override host name with the one in config if != default
-	if configuration.Hostname != "default" {
-		hostData.Hostname = configuration.Hostname
-	}
-	hostData.Environment = configuration.Envtype
-	hostData.Location = configuration.Location
-	hostData.HostType = configuration.HostType
-	hostData.Version = version
-	hostData.HostDataSchemaVersion = hostDataSchemaVersion
-	hostData.Databases = ""
-	hostData.Schemas = ""
-
+func doBuildAndSend(configuration config.Configuration) {
+	hostData := builder.BuildData(configuration)
 	sendData(hostData, configuration)
 }
 
@@ -194,54 +116,4 @@ func sendData(data *model.HostData, configuration config.Configuration) {
 	}
 
 	log.Println("Sending result:", sendResult)
-}
-
-func pwshFetcher(fetcherName string, args ...string) []byte {
-	baseDir := getBaseDir()
-
-	args = append([]string{baseDir + "/fetch/" + fetcherName}, args...)
-	log.Println("Pwshfetching /usr/bin/pwsh/" + " " + strings.Join(args, " "))
-	out, err := exec.Command("/usr/bin/pwsh", args...).Output()
-	if err != nil {
-		log.Print(string(out))
-		log.Fatal(err)
-	}
-
-	return out
-}
-
-func fetcher(fetcherName string, args ...string) []byte {
-	var (
-		cmd    *exec.Cmd
-		err    error
-		stdout bytes.Buffer
-		stderr bytes.Buffer
-	)
-
-	baseDir := getBaseDir()
-	log.Println("Fetching " + baseDir + "/fetch/" + fetcherName + " " + strings.Join(args, " "))
-
-	cmd = exec.Command(baseDir+"/fetch/"+fetcherName, args...)
-	cmd.Stdout = &stdout
-	cmd.Stderr = &stderr
-	err = cmd.Run()
-	// log.Println(stderr)
-	if len(stderr.Bytes()) > 0 {
-		log.Print(string(stderr.Bytes()))
-	}
-
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	return stdout.Bytes()
-}
-
-func getBaseDir() string {
-
-	s, _ := os.Readlink("/proc/self/exe")
-
-	s = filepath.Dir(s)
-
-	return s
 }
