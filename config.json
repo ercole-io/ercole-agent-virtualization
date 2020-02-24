@@ -8,11 +8,12 @@
     "frequency": 24,
     "hosttype": "virtualization",
     "EnableServerValidation": false,
+    "ParallelizeRequests": true,
     "hypervisors": [
-        { 
-            "type": "vmware", 
-            "endpoint": "10.20.30.40", 
-            "username": "reader@vsphere.local", 
+        {
+            "type": "vmware",
+            "endpoint": "10.20.30.40",
+            "username": "reader@vsphere.local",
             "password": "reader"
         },
         {

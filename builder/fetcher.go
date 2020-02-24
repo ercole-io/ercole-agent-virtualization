@@ -11,8 +11,8 @@ import (
 	"github.com/ercole-io/ercole-agent-virtualization/model"
 )
 
-// GetClusters return VMWare clusters from the given hyperVisor
-func GetClusters(hv config.Hypervisor) []model.ClusterInfo {
+// fetchClusters return VMWare clusters from the given hyperVisor
+func fetchClusters(hv config.Hypervisor) []model.ClusterInfo {
 	var out []byte
 
 	switch hv.Type {
@@ -35,8 +35,8 @@ func GetClusters(hv config.Hypervisor) []model.ClusterInfo {
 	return fetchedClusters
 }
 
-// GetVirtualMachines return VMWare virtual machines infos from the given hyperVisor
-func GetVirtualMachines(hv config.Hypervisor) []model.VMInfo {
+// fetchVirtualMachines return VMWare virtual machines infos from the given hyperVisor
+func fetchVirtualMachines(hv config.Hypervisor) []model.VMInfo {
 	var vms []model.VMInfo
 
 	switch hv.Type {
@@ -71,6 +71,33 @@ func pwshFetcher(fetcherName string, args ...string) []byte {
 }
 
 func ovmFetcher(fetcherName string, args ...string) []byte {
+	var (
+		cmd    *exec.Cmd
+		err    error
+		stdout bytes.Buffer
+		stderr bytes.Buffer
+	)
+
+	baseDir := config.GetBaseDir()
+	log.Println("Fetching " + baseDir + "/fetch/" + fetcherName + " " + strings.Join(args, " "))
+
+	cmd = exec.Command(baseDir+"/fetch/"+fetcherName, args...)
+	cmd.Stdout = &stdout
+	cmd.Stderr = &stderr
+	err = cmd.Run()
+
+	if len(stderr.Bytes()) > 0 {
+		log.Print(string(stderr.Bytes()))
+	}
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return stdout.Bytes()
+}
+
+func fetcher(fetcherName string, args ...string) []byte {
 	var (
 		cmd    *exec.Cmd
 		err    error

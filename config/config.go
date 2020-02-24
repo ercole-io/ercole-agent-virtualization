@@ -34,6 +34,7 @@ type Configuration struct {
 	Frequency              int
 	HostType               string
 	EnableServerValidation bool
+	ParallelizeRequests    bool
 	Hypervisors            []Hypervisor
 }
 
@@ -62,14 +63,14 @@ func ReadConfig() Configuration {
 	raw, err := ioutil.ReadFile(configFile)
 
 	if err != nil {
-		log.Fatal("Unable to read configuration file", err)
+		log.Fatal("Unable to read configuration file: ", err)
 	}
 
 	var conf Configuration
 	err = json.Unmarshal(raw, &conf)
 
 	if err != nil {
-		log.Fatal("Unable to parse configuration file", err)
+		log.Fatal("Unable to parse configuration file: ", err)
 	}
 
 	return conf

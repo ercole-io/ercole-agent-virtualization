@@ -32,9 +32,7 @@ import (
 	"github.com/ercole-io/ercole-agent-virtualization/scheduler/storage"
 )
 
-//var configuration config.Configuration
 var version = "latest"
-var hostDataSchemaVersion = 5
 
 func main() {
 	rand.Seed(243243)
@@ -45,9 +43,9 @@ func main() {
 	memStorage := storage.NewMemoryStorage()
 	scheduler := scheduler.New(memStorage)
 
-	_, err := scheduler.RunEvery(time.Duration(configuration.Frequency)*time.Hour, doBuildAndSend, configuration)
+	_, err := scheduler.RunEvery(time.Duration(configuration.Frequency)*time.Hour, doBuildAndSend, configuration, version)
 	if err != nil {
-		log.Fatal("Error sending data", err)
+		log.Fatal("Error sending data: ", err)
 	}
 
 	scheduler.Start()
@@ -55,7 +53,7 @@ func main() {
 }
 
 func doBuildAndSend(configuration config.Configuration) {
-	hostData := builder.BuildData(configuration)
+	hostData := builder.BuildData(configuration, version)
 	sendData(hostData, configuration)
 }
 
@@ -106,14 +104,14 @@ func sendData(data *model.HostData, configuration config.Configuration) {
 	sendResult := "FAILED"
 
 	if err != nil {
-		log.Println("Error sending data", err)
+		log.Println("Error sending data: ", err)
 	} else {
-		log.Println("Response status:", resp.Status)
+		log.Println("Response status: ", resp.Status)
 		if resp.StatusCode == 200 {
 			sendResult = "SUCCESS"
 		}
 		defer resp.Body.Close()
 	}
 
-	log.Println("Sending result:", sendResult)
+	log.Println("Sending result: ", sendResult)
 }

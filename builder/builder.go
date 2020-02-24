@@ -1,7 +1,15 @@
-package builder;
+package builder
+
+import (
+	"github.com/ercole-io/ercole-agent-virtualization/config"
+	"github.com/ercole-io/ercole-agent-virtualization/marshal"
+	"github.com/ercole-io/ercole-agent-virtualization/model"
+)
+
+var hostDataSchemaVersion = 5
 
 // BuildData fetch host and build HostData
-func BuildData(configuration config.Configuration) model.HostData {
+func BuildData(configuration config.Configuration, version string) *model.HostData {
 	out := fetcher("host")
 	host := marshal.Host(out)
 
@@ -18,13 +26,22 @@ func BuildData(configuration config.Configuration) model.HostData {
 	virtualMachinesChannel := make(chan []model.VMInfo, countHypervisors)
 
 	for _, hv := range configuration.Hypervisors {
-		go func(hv config.Hypervisor) {
-			clustersChannel <- fetch.GetClusters(hv)
-		}(hv)
+		done := make(chan bool, 1)
+		go func(hv config.Hypervisor, done chan bool) {
+			clustersChannel <- fetchClusters(hv)
+			done <- true
+		}(hv, done)
+		if !configuration.ParallelizeRequests {
+			<-done
+		}
 
-		go func(hv config.Hypervisor) {
-			virtualMachinesChannel <- fetch.GetVirtualMachines(hv)
-		}(hv)
+		done = make(chan bool, 1)
+		go func(hv config.Hypervisor, done chan bool) {
+			virtualMachinesChannel <- fetchVirtualMachines(hv)
+		}(hv, done)
+		if !configuration.ParallelizeRequests {
+			<-done
+		}
 	}
 
 	for i := 0; i < countHypervisors; i++ {
@@ -77,31 +94,4 @@ func BuildData(configuration config.Configuration) model.HostData {
 	hostData.Schemas = ""
 
 	return hostData
-}
-
-func fetcher(fetcherName string, args ...string) []byte {
-	var (
-		cmd    *exec.Cmd
-		err    error
-		stdout bytes.Buffer
-		stderr bytes.Buffer
-	)
-
-	baseDir := config.GetBaseDir()
-	log.Println("Fetching " + baseDir + "/fetch/" + fetcherName + " " + strings.Join(args, " "))
-
-	cmd = exec.Command(baseDir+"/fetch/"+fetcherName, args...)
-	cmd.Stdout = &stdout
-	cmd.Stderr = &stderr
-	err = cmd.Run()
-	// log.Println(stderr)
-	if len(stderr.Bytes()) > 0 {
-		log.Print(string(stderr.Bytes()))
-	}
-
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	return stdout.Bytes()
 }
