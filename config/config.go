@@ -34,6 +34,7 @@ type Configuration struct {
 	Frequency              int
 	HostType               string
 	EnableServerValidation bool
+	ParallelizeRequests    bool
 	Hypervisors            []Hypervisor
 }
 
@@ -51,7 +52,7 @@ type Hypervisor struct {
 // or /opt/ercole-agent
 func ReadConfig() Configuration {
 
-	baseDir := getBaseDir()
+	baseDir := GetBaseDir()
 
 	configFile := baseDir + "/config.json"
 	ex := exists(configFile)
@@ -62,14 +63,14 @@ func ReadConfig() Configuration {
 	raw, err := ioutil.ReadFile(configFile)
 
 	if err != nil {
-		log.Fatal("Unable to read configuration file", err)
+		log.Fatal("Unable to read configuration file: ", err)
 	}
 
 	var conf Configuration
 	err = json.Unmarshal(raw, &conf)
 
 	if err != nil {
-		log.Fatal("Unable to parse configuration file", err)
+		log.Fatal("Unable to parse configuration file: ", err)
 	}
 
 	return conf
@@ -84,12 +85,10 @@ func exists(name string) bool {
 	return true
 }
 
-func getBaseDir() string {
-
+// GetBaseDir return path to the directory where is the executable
+func GetBaseDir() string {
 	s, _ := os.Readlink("/proc/self/exe")
-
 	s = filepath.Dir(s)
 
 	return s
-
 }
