@@ -37,20 +37,23 @@ func GetClusters(hv config.Hypervisor) []model.ClusterInfo {
 
 // GetVirtualMachines return VMWare virtual machines infos from the given hyperVisor
 func GetVirtualMachines(hv config.Hypervisor) []model.VMInfo {
-	var out []byte
+	var vms []model.VMInfo
 
 	switch hv.Type {
 	case "vmware":
-		out = pwshFetcher("vmware.ps1", "-s", "vms", hv.Endpoint, hv.Username, hv.Password)
+		out := pwshFetcher("vmware.ps1", "-s", "vms", hv.Endpoint, hv.Username, hv.Password)
+		vms = marshal.VmwareVMs(out)
 
 	case "ovm":
-		out = ovmFetcher("ovm", "vms", hv.Endpoint, hv.Username, hv.Password, hv.OvmUserKey, hv.OvmControl)
+		out := ovmFetcher("ovm", "vms", hv.Endpoint, hv.Username, hv.Password, hv.OvmUserKey, hv.OvmControl)
+		vms = marshal.OvmVMs(out)
+
 	default:
 		log.Println("Hypervisor not supported:", hv.Type, "(", hv, ")")
 		return make([]model.VMInfo, 0)
 	}
 
-	return marshal.OvmVMs(out)
+	return vms
 }
 
 func pwshFetcher(fetcherName string, args ...string) []byte {
