@@ -1,6 +1,8 @@
 package builder
 
 import (
+	"log"
+
 	"github.com/ercole-io/ercole-agent-virtualization/config"
 	"github.com/ercole-io/ercole-agent-virtualization/marshal"
 	"github.com/ercole-io/ercole-agent-virtualization/model"
@@ -10,6 +12,8 @@ var hostDataSchemaVersion = 5
 
 // BuildData fetch host and build HostData
 func BuildData(configuration config.Configuration, version string) *model.HostData {
+	log.Println("Start to build hostData...")
+
 	out := fetcher("filesystem")
 	filesystems := marshal.Filesystems(out)
 
@@ -40,6 +44,7 @@ func BuildData(configuration config.Configuration, version string) *model.HostDa
 	hostData.Databases = ""
 	hostData.Schemas = ""
 
+	log.Println("HostData builded!")
 	return hostData
 }
 
@@ -70,12 +75,12 @@ func getClustersInfos(configuration config.Configuration) []model.ClusterInfo {
 	var clusters []model.ClusterInfo = []model.ClusterInfo{}
 	var vms []model.VMInfo = []model.VMInfo{}
 
-	for vals := range clustersChan {
-		clusters = append(clusters, vals...)
+	for i := 0; i < countHypervisors; i++ {
+		clusters = append(clusters, (<-clustersChan)...)
 	}
 
-	for vals := range virtualMachinesChan {
-		vms = append(vms, vals...)
+	for i := 0; i < countHypervisors; i++ {
+		vms = append(vms, (<-virtualMachinesChan)...)
 	}
 
 	setVMsInClusterInfo(clusters, vms)
