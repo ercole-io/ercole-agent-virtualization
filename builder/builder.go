@@ -66,6 +66,7 @@ func getClustersInfos(configuration config.Configuration) []model.ClusterInfo {
 		done = make(chan bool, 1)
 		go func(hv config.Hypervisor, done chan bool) {
 			virtualMachinesChan <- fetchVirtualMachines(hv)
+			done <- true
 		}(hv, done)
 		if !configuration.ParallelizeRequests {
 			<-done
