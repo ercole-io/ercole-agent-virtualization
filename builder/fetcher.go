@@ -53,6 +53,8 @@ func fetchVirtualMachines(hv config.Hypervisor) []model.VMInfo {
 		return make([]model.VMInfo, 0)
 	}
 
+	log.Printf("Got %d vms from hypervisor: %s", len(vms), hv.Endpoint)
+
 	return vms
 }
 
