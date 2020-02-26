@@ -107,11 +107,11 @@ func setVMsInClusterInfo(clusters []model.ClusterInfo, vms []model.VMInfo) {
 		clusterMap[vm.ClusterName] = append(clusterMap[vm.ClusterName], vm)
 	}
 
-	for _, clusterInfo := range clusters {
-		if clusterMap[clusterInfo.Name] != nil {
-			clusterInfo.VMs = clusterMap[clusterInfo.Name]
+	for i := range clusters {
+		if clusterMap[clusters[i].Name] != nil {
+			clusters[i].VMs = clusterMap[clusters[i].Name]
 		} else {
-			clusterInfo.VMs = []model.VMInfo{}
+			clusters[i].VMs = []model.VMInfo{}
 		}
 	}
 }
