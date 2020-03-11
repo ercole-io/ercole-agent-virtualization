@@ -132,6 +132,8 @@ if [[ $TYPE == "vms" ]]; then
 	echo 
 elif [[ $TYPE == "cluster" ]]; then
 	for i in $(list_server_pool); do
+		CLUSTERCPU=0
+		CLUSTERSOCKET=0
 		for j in $(get_servers_from_pool "$i"); do
 			CLUSTERCPU=$(($CLUSTERCPU + $(get_cpu_from_server $j)))
 			CLUSTERSOCKET=$(($CLUSTERSOCKET + $(get_socket_from_server $j)))
