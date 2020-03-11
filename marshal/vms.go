@@ -2,7 +2,6 @@ package marshal
 
 import (
 	"bufio"
-	"fmt"
 	"strings"
 
 	"github.com/ercole-io/ercole-agent-virtualization/model"
@@ -49,7 +48,6 @@ func OvmVMs(cmdOutput []byte) []model.VMInfo {
 		if len(splitted) < 5 {
 			continue
 		}
-		fmt.Println(strings.Join(splitted, "|##|"))
 		vm := model.VMInfo{
 			ClusterName:  strings.TrimSpace(splitted[0]),
 			Name:         strings.TrimSpace(splitted[1]),
