@@ -84,12 +84,12 @@ func getClustersInfos(configuration config.Configuration) []model.ClusterInfo {
 		vms = append(vms, (<-virtualMachinesChan)...)
 	}
 
-	setVMsInClusterInfo(clusters, vms)
+	clusters = setVMsInClusterInfo(clusters, vms)
 
 	return clusters
 }
 
-func setVMsInClusterInfo(clusters []model.ClusterInfo, vms []model.VMInfo) {
+func setVMsInClusterInfo(clusters []model.ClusterInfo, vms []model.VMInfo) []model.ClusterInfo {
 	clusters = append(clusters, model.ClusterInfo{
 		Name:    "not_in_cluster",
 		Type:    "unknown",
@@ -114,4 +114,6 @@ func setVMsInClusterInfo(clusters []model.ClusterInfo, vms []model.VMInfo) {
 			clusters[i].VMs = []model.VMInfo{}
 		}
 	}
+
+	return clusters
 }
