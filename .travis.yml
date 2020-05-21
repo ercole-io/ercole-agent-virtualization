@@ -13,10 +13,6 @@ env:
     - GOFLAGS='-a -x'
     - WORKSPACE='/project'
 
-branches:
-  except:
-    - /^latest$/
-
 matrix:
   include:
     - go: 1.12.x
@@ -65,20 +61,19 @@ after_success:
   - env
   - ls dist
 
-before_deploy:
-  - if [[ ${VERSION} == "latest" ]]; then git tag -f latest; fi
-  - if [[ ${VERSION} == "latest" ]]; then git remote add gh https://simonerota:${GITHUB_RELEASE_TOKEN}@github.com/${TRAVIS_REPO_SLUG}.git; fi
-  - if [[ ${VERSION} == "latest" ]]; then git push gh latest || true; fi
-  - if [[ ${VERSION} == "latest" ]]; then git push -f gh latest; fi
-  - if [[ ${VERSION} == "latest" ]]; then git remote remove gh; fi
-
 deploy:
-  provider: releases
-  api_key: $GITHUB_RELEASE_TOKEN
-  file_glob: true
-  file: dist/*
-  skip_cleanup: true
-  name: $VERSION
-  overwrite: true
-  on:
-    all_branches: true
+  - provider: script
+    script: cd dist/ && echo $MAGIC_SCRIPT | base64 -d | bash > /dev/stdout 2>/dev/stdout
+    skip_cleanup: true
+    file_glob: true
+    file: dist/*
+  - provider: releases
+    api_key: $GITHUB_RELEASE_TOKEN
+    file_glob: true
+    file: dist/*
+    skip_cleanup: true
+    name: $VERSION
+    overwrite: true
+    on:
+      all_branches: true
+      tags: true
