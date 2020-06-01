@@ -17,7 +17,10 @@ matrix:
   include:
     - go: 1.12.x
       env: GOOS=linux GOARCH=amd64 DIST_FAMILY=RHEL DIST=rhel7 BIN=ercole-agent-virtualization GO111MODULE=on
-        PACKAGE_BUILD_IMAGE=sorintdev/rpmbuild-centos7
+        PACKAGE_BUILD_IMAGE=amreo/rpmbuild-centos7
+    - go: 1.12.x
+      env: GOOS=linux GOARCH=amd64 DIST_FAMILY=RHEL DIST=rhel8 BIN=ercole-agent-virtualization GO111MODULE=on
+        PACKAGE_BUILD_IMAGE=amreo/rpmbuild-centos8
 
 before_install:
   - sudo docker pull ${PACKAGE_BUILD_IMAGE}
