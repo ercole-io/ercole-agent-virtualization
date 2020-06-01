@@ -17,7 +17,10 @@ matrix:
   include:
     - go: 1.12.x
       env: GOOS=linux GOARCH=amd64 DIST_FAMILY=RHEL DIST=rhel7 BIN=ercole-agent-virtualization GO111MODULE=on
-        PACKAGE_BUILD_IMAGE=sorintdev/rpmbuild-centos7
+        PACKAGE_BUILD_IMAGE=amreo/rpmbuild-centos7
+    - go: 1.12.x
+      env: GOOS=linux GOARCH=amd64 DIST_FAMILY=RHEL DIST=rhel8 BIN=ercole-agent-virtualization GO111MODULE=on
+        PACKAGE_BUILD_IMAGE=amreo/rpmbuild-centos8
 
 before_install:
   - sudo docker pull ${PACKAGE_BUILD_IMAGE}
@@ -35,6 +38,7 @@ script:
   - sed "s/\"latest\"/\"${VERSION}\"/" main.go > /tmp/main.go
   - cp /tmp/main.go main.go
   - go build -o ${BIN} main.go
+  - sed -i "s|ERCOLE_VERSION|${VERSION}|g" package/rhel8/ercole-agent-virtualization.spec
   - sed -i "s|ERCOLE_VERSION|${VERSION}|g" package/rhel7/ercole-agent-virtualization.spec
   - if [ $DIST_FAMILY == "RHEL" ]; then docker exec -it package_builder /bin/sh -c "cd
     ${WORKSPACE} && rpmbuild --quiet -bl package/${DIST}/ercole-agent-virtualization.spec" || echo

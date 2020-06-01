@@ -1,0 +1,13 @@
+[Unit]
+Description=Ercole Agent Virtualization
+After=syslog.target network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/ercole-agent-virtualization
+User=ercole
+ExecStart=/opt/ercole-agent-virtualization/ercole-agent-virtualization
+PIDFile=/opt/ercole-agent-virtualization/run/ercole-agent-virtualization.pid
+
+[Install]
+WantedBy=multi-user.target
